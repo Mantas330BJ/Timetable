@@ -8,30 +8,63 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
-import java.util.TreeSet;
+import java.util.*;
 
 public class Main extends Application {
-    public static ArrayList<Subject> subjects = new ArrayList<>();
-    //public static HashMap<Date, Subject> subjects = new HashMap<>();
+                        //Date
+    public static HashMap<String, ArrayList<Subject>> subjects = new HashMap<>();
+    public static HashMap<String, ArrayList<SubjectTime>> filteredSubjects = new HashMap<>(); //todo: change to set
+    // todo: review change
+    //public static HashSet<String> studentNames = new HashSet<>();
+    public static HashMap<String, Student> studentNames = new HashMap<>();
+    public static HashMap<Integer, ArrayList<Student>> groups = new HashMap<>();
+    public static Student loggedStudent;
+    //todo: hashmap with visited subjects from file
+
     void readSubjects() throws FileNotFoundException {
         File f = new File("C:\\timetable\\subjectData.txt");
         Scanner s = new Scanner(f);
         while (s.hasNextLine()) {
             String subjectName = s.nextLine();
-            ArrayList<SubjectTime> times = new ArrayList<>();
-
             int dayCount = Integer.parseInt(s.nextLine());
             for (int i = 0; i < dayCount; ++i) {
                 String date = s.nextLine();
                 String hour = s.nextLine();
-                times.add(new SubjectTime(date, hour));
+                SubjectTime time = new SubjectTime(date, hour);
+
+                filteredSubjects.computeIfAbsent(subjectName, k -> new ArrayList<>());
+                filteredSubjects.get(subjectName).add(time);
+
+                System.out.println(time.date.year + " " + time.date.month + " " + time.date.dayOfMonth);
+                subjects.computeIfAbsent(time.date.toString(), k -> new ArrayList<>());
+                subjects.get(time.date.toString()).add(new Subject(subjectName, time));
             }
-            Subject subject = new Subject(subjectName, times);
-            subjects.add(subject);
         }
+        s.close();
+    }
+
+    void getStudents() throws FileNotFoundException {
+        File f = new File("C:\\timetable\\groupData.txt");
+        Scanner s = new Scanner(f);
+        while (s.hasNextLine()) {
+            int groupNumber = Integer.parseInt(s.nextLine());
+            int studentCount = Integer.parseInt(s.nextLine());
+            for (int i = 0; i < studentCount; ++i) {
+                String name = s.nextLine();
+                HashSet<String> visitedSubjects = new HashSet<>();
+                int subjectCount = Integer.parseInt(s.nextLine());
+                for (int j = 0; j < subjectCount; ++j) {
+                    String date = s.nextLine();
+                    String hour = s.nextLine();
+                    visitedSubjects.add(date + "*" + hour);
+                }
+                groups.computeIfAbsent(groupNumber, k -> new ArrayList<>());
+                Student student = new Student(name, visitedSubjects);
+                groups.get(groupNumber).add(student);
+                studentNames.put(name, student);
+            }
+        }
+        s.close();
     }
 
     @Override
@@ -40,6 +73,7 @@ public class Main extends Application {
         primaryStage.setTitle("Prisijungimas");
         primaryStage.setScene(new Scene(root, 800, 500));
         readSubjects();
+        getStudents();
         primaryStage.show();
     }
 

@@ -1,14 +1,14 @@
 package sample;
 
-import javafx.scene.layout.StackPane;
-
 import java.util.HashSet;
 
 public class Student {
-    HashSet<StackPane> visitedSubjects;
-    int group;
+            //SubjectTime
+    HashSet<String> visitedSubjects;
+    String name;
 
-    Student() {
-        visitedSubjects = new HashSet<>();
+    Student (String name, HashSet<String> visitedSubjects) {
+        this.name = name;
+        this.visitedSubjects = visitedSubjects;
     }
 }

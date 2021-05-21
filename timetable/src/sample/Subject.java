@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 public class Subject {
     String subjectName;
-    ArrayList<SubjectTime> times;
+    SubjectTime time;
 
-    Subject (String subjectName, ArrayList<SubjectTime> times) {
+    Subject (String subjectName, SubjectTime time) {
         this.subjectName = subjectName;
-        this.times = times;
+        this.time = time;
     }
 }

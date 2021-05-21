@@ -9,8 +9,10 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+import static sample.Main.studentNames;
+
 public class loginController extends Windows {
-    public static String name;
+    public static String name; //todo: should delete
     public static String surname;
 
     public Button loginButton;
@@ -22,9 +24,9 @@ public class loginController extends Windows {
     }
 
     public void showMainWindow() throws IOException {
-        if (!emptyInputs()) {
-            name = nameTextField.getText();
-            surname = surnameTextField.getText();
+        String name = nameTextField.getText() + " " + surnameTextField.getText();
+        if (studentNames.containsKey(name)) {
+            Main.loggedStudent = studentNames.get(name);
             Parent root = FXMLLoader.load(getClass().getResource("mainWindow.fxml"));
             Stage primaryStage = new Stage();
             primaryStage.setTitle("Pagrindinis langas");
@@ -32,6 +34,6 @@ public class loginController extends Windows {
             primaryStage.show();
         }
         else
-            showAlert("Įvesties klaida.", "Vardas ar pavardė negali būti tušti.");
+            showAlert("Įvesties klaida.", "Neatpažintas vartotojas.");
     }
 }
