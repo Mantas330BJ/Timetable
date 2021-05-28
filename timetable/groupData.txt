@@ -2,16 +2,20 @@
 5
 Jonas Jonaitis
 2
-2021 5 19
-12 14
 2021 5 21
 8.5 10
+2021 5 19
+12 14
 Petras Petraitis
-0
+1
+2021 5 21
+8.5 10
 Asta Astaitė
 0
 Ieva Ievaitė
-0
+1
+2021 5 19
+12 14
 Tomas Tomauskas
 0
 5
@@ -19,6 +23,8 @@ Tomas Tomauskas
 Giedrius Giedrauskas
 0
 Joris Joriauskas
-0
+1
+2021 5 27
+9 13
 Rūta Rūtaitė
 0

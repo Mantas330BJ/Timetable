@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="969.0" prefWidth="1325.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.timetableController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="969.0" prefWidth="1325.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.TimetableController">
    <children>
       <Pane fx:id="pane" layoutX="51.5" layoutY="177.5">
          <children>
@@ -74,5 +74,9 @@
          </font>
       </Label>
       <Button fx:id="weeksButton" layoutX="52.0" layoutY="111.0" mnemonicParsing="false" onAction="#showWeek" text="Rodyti savaitę" />
+      <Label fx:id="nameLabel" alignment="TOP_RIGHT" layoutX="708.0" layoutY="146.0" prefHeight="20.0" prefWidth="523.0">
+         <font>
+            <Font size="14.0" />
+         </font></Label>
    </children>
 </Pane>

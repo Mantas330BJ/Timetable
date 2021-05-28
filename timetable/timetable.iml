@@ -8,11 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="javafx-swt" level="project" />
-    <orderEntry type="library" name="jfxtras-all-10.0-r1" level="project" />
-    <orderEntry type="library" name="jfxtras-controls-15-r2" level="project" />
-    <orderEntry type="library" name="jfxtras-fxml-15-r2" level="project" />
-    <orderEntry type="library" name="jfxtras-common-15-r2" level="project" />
-    <orderEntry type="library" name="jfxtras-icalendarfx-15-r2" level="project" />
-    <orderEntry type="library" name="jfxtras-agenda-15-r2" level="project" />
+    <orderEntry type="library" name="bcpkix-jdk15on-1.68" level="project" />
   </component>
 </module>
