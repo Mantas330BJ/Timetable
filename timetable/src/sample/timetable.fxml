@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -67,16 +67,21 @@
             </GridPane>
          </children>
       </Pane>
-      <DatePicker fx:id="datePicker" layoutX="52.0" layoutY="74.0" />
-      <Label layoutX="52.0" layoutY="41.0" text="Pasirinkti savaitę">
+      <Label layoutX="52.0" layoutY="30.0" text="Pasirinkti laikotarpį">
          <font>
-            <Font size="14.0" />
+            <Font size="16.0" />
          </font>
       </Label>
-      <Button fx:id="weeksButton" layoutX="52.0" layoutY="111.0" mnemonicParsing="false" onAction="#showWeek" text="Rodyti savaitę" />
+      <Button fx:id="weeksButton" layoutX="52.0" layoutY="134.0" mnemonicParsing="false" onAction="#showWeek" text="Rodyti laikotarpį" />
       <Label fx:id="nameLabel" alignment="TOP_RIGHT" layoutX="708.0" layoutY="146.0" prefHeight="20.0" prefWidth="523.0">
          <font>
             <Font size="14.0" />
          </font></Label>
+      <ComboBox fx:id="yearsComboBox" layoutX="52.0" layoutY="93.0" prefWidth="150.0" />
+      <Label layoutX="52.0" layoutY="66.0" text="Metai" />
+      <Label layoutX="227.0" layoutY="66.0" text="Mėnesis" />
+      <ComboBox fx:id="monthsComboBox" layoutX="227.0" layoutY="93.0" prefWidth="150.0" />
+      <Button fx:id="previousWeekButton" layoutX="952.0" layoutY="884.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="119.0" onAction="#showPreviousWeek" text="Praeita savaitė" />
+      <Button fx:id="nextWeekButton" layoutX="1112.0" layoutY="884.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="119.0" onAction="#showNextWeek" text="Kita savaitė" />
    </children>
 </Pane>

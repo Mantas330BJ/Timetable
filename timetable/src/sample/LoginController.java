@@ -1,7 +1,6 @@
 package sample;
 
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -17,16 +16,28 @@ public class LoginController extends Windows {
     public TextField nameTextField;
     public TextField surnameTextField;
 
+    public Student loggedStudent = null;
+
     public void showMainWindow() throws IOException {
         name = nameTextField.getText() + " " + surnameTextField.getText();
         if (studentNames.containsKey(name)) {
-            Main.currentStudent = studentNames.get(name);
-            Main.loggedStudent = studentNames.get(name);
-            Parent root = FXMLLoader.load(getClass().getResource("mainWindow.fxml"));
-            Stage primaryStage = new Stage();
-            primaryStage.setTitle("Pagrindinis langas");
-            primaryStage.setScene(new Scene(root, 800, 500));
-            primaryStage.show();
+            if (loggedStudent != null && loggedStudent.name.equals(name))
+                showAlert("Įvesties klaida.", "Šis vartotojas jau prisijungęs.");
+            else {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("mainWindow.fxml"));
+                Stage stage = new Stage();
+                loggedStudent = studentNames.get(name);
+                ++Main.usersCount;
+                Main.firstUser = false;
+                stage.setUserData(loggedStudent);
+                stage.setTitle("Pagrindinis langas");
+                stage.setScene(new Scene(loader.load()));
+                stage.setOnCloseRequest(e -> {loggedStudent = null; --Main.usersCount;});
+                MainController newProjectController = loader.getController();
+                newProjectController.setData(stage);
+
+                stage.show();
+            }
         }
         else
             showAlert("Įvesties klaida.", "Neatpažintas vartotojas.");

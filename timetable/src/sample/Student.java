@@ -3,7 +3,6 @@ package sample;
 import java.util.HashSet;
 
 public class Student {
-            //SubjectTime
     HashSet<String> visitedSubjects;
     public String name;
     int group;

@@ -11,11 +11,10 @@ import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.layout.Pane;
+import javafx.scene.control.ListView;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -25,25 +24,27 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 
-import static sample.Main.filteredSubjects;
-import static sample.Main.groupsSubjects;
+import static sample.Main.*;
 
 public class MainController {
     Map<String, Integer> modes = Map.of("Vartotojas", 1, "Grupė", 2, "Mokomasis dalykas", 3);
 
     public Button timeTableButton;
-    public static Stage primaryStage = new Stage();
+    //public static Stage primaryStage = new Stage();
     public ComboBox<String> filtersBox;
     public ComboBox<String> filteredBox;
-    String FONT = "C:\\timetable\\resources\\FreeSans.ttf";
+    String FONT = "resources\\FreeSans.ttf";
 
 
     public static String timetableTopText;
     public static int mode;
     public static String chosen;
-    public Pane pane; //todo: remove later !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    public void initialize() throws IOException {
+    public Student loggedStudent;
+    public Student currentStudent;
+
+    public void initialize() {
+
         filtersBox.getItems().addAll("Vartotojas", "Grupė", "Mokomasis dalykas");
         filtersBox.getSelectionModel().selectedItemProperty().addListener( (options, oldValue, newValue) -> {
             filteredBox.getItems().clear();
@@ -68,23 +69,53 @@ public class MainController {
 
     }
 
+    public void setData(Stage stage) {
+        loggedStudent = (Student)stage.getUserData();
+        currentStudent = loggedStudent;
+    }
+
+    public void setChatCloseRequest(Stage stage) {
+        stage.setOnCloseRequest(e -> {
+            for (ListView<String> l : userLists.keySet())
+                l.getItems().remove(currentStudent.name);
+            try {
+                sockets.get(currentStudent.name).close();
+            } catch (IOException exception) {
+                exception.printStackTrace();
+            }
+            sockets.remove(currentStudent.name);
+        });
+    }
+
     public void loadTimetableScene() throws IOException {
-        Parent root = FXMLLoader.load(getClass().getResource("timetable.fxml"));
-        primaryStage.setTitle("Tvarkaraštis");
-        primaryStage.setScene(new Scene(root, 1300, 900));
-        primaryStage.show();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("timetable.fxml"));
+        Stage stage = new Stage();
+        if (mode == 0)
+            stage.setUserData(loggedStudent);
+        else
+            stage.setUserData(currentStudent);
+        stage.setTitle("Tvarkaraštis");
+        stage.setScene(new Scene(loader.load()));
+        TimetableController newProjectController = loader.getController();
+        newProjectController.setData(stage);
+        stage.show();
     }
 
     public void showChat() throws IOException {
-        Parent root = FXMLLoader.load(getClass().getResource("chat.fxml"));
-        primaryStage.setTitle("Pokalbiai");
-        primaryStage.setScene(new Scene(root, 1300, 900));
-        primaryStage.show();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("chat.fxml"));
+        Stage stage = new Stage();
+        stage.setUserData(loggedStudent.name);
+        setChatCloseRequest(stage);
+        stage.setTitle("Pokalbiai");
+        stage.setScene(new Scene(loader.load()));
+        ChatController newProjectController = loader.getController();
+        newProjectController.setData(stage);
+        stage.show();
     }
 
     public void showTimetable() throws IOException {
         mode = 0;
-        timetableTopText = "Studentas: " + Main.loggedStudent.name;
+        timetableTopText = "Studentas: " + loggedStudent.name;
         loadTimetableScene();
     }
 
@@ -92,9 +123,9 @@ public class MainController {
         chosen = filteredBox.getValue();
         mode = modes.get(filtersBox.getValue());
         if (mode == 1)
-            Main.currentStudent = Main.studentNames.get(chosen);
+            currentStudent = Main.studentNames.get(chosen);
         else if (mode == 2)
-            Main.currentStudent = Main.groups.get(Integer.parseInt(chosen)).get(0); //todo: think about this
+            currentStudent = Main.groups.get(Integer.parseInt(chosen)).get(0);
     }
 
     public void filter() throws IOException {
@@ -115,14 +146,12 @@ public class MainController {
         PdfFont f = PdfFontFactory.createFont(FONT, PdfEncodings.IDENTITY_H);
         String pattern = "YYYY M d";
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(pattern);
-        LocalDate d = LocalDate.parse("2018-11-27"); //todo: think about this!!!!!!!!
-
-        HashSet<String> visitedSubjs = Main.currentStudent.visitedSubjects;
-        for (int i = 0; i < 1000; ++i, d = d.plusDays(1)) { //todo: change ambiguity
+        HashSet<String> visitedSubjs = currentStudent.visitedSubjects;
+        for (LocalDate d = Main.startDate; d.compareTo(Main.endDate) <= 0; d = d.plusDays(1)) {
             String curr = dateFormatter.format(d);
             ArrayList<Subject> daySubjects;
             if (MainController.mode <= 2)
-                daySubjects = groupsSubjects.get(Main.currentStudent.group).get(curr);
+                daySubjects = groupsSubjects.get(currentStudent.group).get(curr);
             else
                 daySubjects = filteredSubjects.get(MainController.chosen).get(curr);
 
@@ -130,7 +159,7 @@ public class MainController {
                 for (Subject s : daySubjects) {
                     if (MainController.mode != 1 || visitedSubjs.contains(s.time.toString())) {
                         table.addCell(new Cell().add(new Paragraph(s.time.date.toString())));
-                        table.addCell(new Cell().add(new Paragraph(s.time.startHour + "-" + s.time.endHour))); //todo: add new class
+                        table.addCell(new Cell().add(new Paragraph(s.time.getTime())));
                         table.addCell(new Cell().add(new Paragraph(s.subjectName).setFont(f)));
                     }
                 }
@@ -145,13 +174,12 @@ public class MainController {
         Table table = new Table(pointColumnWidths);
         getData();
 
-        System.out.println(mode);
         table.addCell(new Cell().add(new Paragraph("Data")));
         table.addCell(new Cell().add(new Paragraph("Laikas")));
         table.addCell(new Cell().add(new Paragraph("Mokomasis dalykas")));
         addCells(table);
 
-        PdfWriter pdfWriter = new PdfWriter("C:\\timetable\\filteredPdf.pdf");
+        PdfWriter pdfWriter = new PdfWriter("filteredPdf.pdf");
         PdfDocument pdfDocument = new PdfDocument(pdfWriter);
         Document document = new Document(pdfDocument, PageSize.A1);
         document.add(table);

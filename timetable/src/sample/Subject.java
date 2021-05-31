@@ -1,7 +1,5 @@
 package sample;
 
-import java.util.ArrayList;
-
 public class Subject {
     String subjectName;
     SubjectTime time;

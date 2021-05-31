@@ -7,7 +7,9 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,11 +22,14 @@ import static sample.Main.*;
 
 public class TimetableController extends Windows {
     public Label nameLabel;
+    public ComboBox<Integer> yearsComboBox;
+    public ComboBox<String> monthsComboBox;
+    public Button previousWeekButton;
+    public Button nextWeekButton;
 
     Color visitedColor = Color.rgb(100, 230, 230);
     Color notVisitedColor = Color.rgb(230, 230, 230);
     public Button weeksButton;
-    public DatePicker datePicker;
     public GridPane gridPane;
     public static double x1, x2, y1, y2;
     public Pane pane;
@@ -32,20 +37,24 @@ public class TimetableController extends Windows {
     double deviation = 2;
     int daysInWeek = 7;
     double maxHour = 22, minHour = 8;
-    String person = LoginController.name;
     ArrayList<Label> columnNames = new ArrayList<>();
 
     String[] days = new String[] {"Pirmadienis", "Antradienis", "Trečiadienis", "Ketvirtadienis", "Penktadienis", "Šeštadienis", "Sekmadienis"};
+    String[] months = {"Sausis", "Vasaris", "Kovas", "Balandis", "Gegužė", "Birželis", "Liepa", "Rugpjūtis", "Rugsėjis", "Spalis", "Lapkritis", "Gruodis"};
+
+    HashMap<String, Integer> monthMap = new HashMap<>();
+
     LocalDate startingDay;
 
     Stack<StackPane> stacks = new Stack<>();
+    Student currentStudent;
 
-    public void initialize() {
-        gridPane.setVisible(false);
-        MainController.primaryStage.setOnCloseRequest(e -> { //todo: move to another controller??
-            currentStudent = loggedStudent;
+    int currentDay = 1;
+
+    public void setData(Stage stage) {
+        stage.setOnCloseRequest(e -> {
             try {
-                FileWriter f = new FileWriter("C:\\timetable\\groupData.txt");
+                FileWriter f = new FileWriter("StudentInfo\\groupData.txt");
                 for (Map.Entry<Integer, ArrayList<Student>> entry : Main.groups.entrySet()) {
                     f.write(entry.getKey() + "\n");
                     f.write(entry.getValue().size() + "\n");
@@ -60,20 +69,51 @@ public class TimetableController extends Windows {
                     }
                 }
                 f.close();
+
+                f = new FileWriter("StudentInfo\\datePick.txt");
+                f.write(yearsComboBox.getValue() + "\n");
+                f.write(monthsComboBox.getValue());
+                f.close();
+
             } catch (IOException exception) {
                 exception.printStackTrace();
             }
         });
+        currentStudent = (Student)stage.getUserData();
+    }
+
+    public void initialize() throws FileNotFoundException {
+        previousWeekButton.setVisible(false);
+        nextWeekButton.setVisible(false);
+
+        ArrayList<Integer> years = new ArrayList<>();
+        for (int year = 1900; year <= 2030; ++year)
+            years.add(year);
+        for (int i = 0; i < months.length; ++i) {
+            monthMap.put(months[i], i + 1);
+        }
+        yearsComboBox.getItems().addAll(years);
+        monthsComboBox.getItems().addAll(months);
+        gridPane.setVisible(false);
+
+        File f = new File("StudentInfo\\datePick.txt");
+        Scanner s = new Scanner(f);
+        if (!s.hasNextLine()) {
+            yearsComboBox.getSelectionModel().select(Integer.valueOf(LocalDate.now().getYear()));
+            monthsComboBox.getSelectionModel().select(months[LocalDate.now().getMonthValue() - 1]);
+        }
+        else {
+            yearsComboBox.getSelectionModel().select(Integer.valueOf(s.nextLine()));
+            monthsComboBox.getSelectionModel().select(s.nextLine());
+        }
     }
 
 
     void setWeekDays() {
         String pattern = "MM-dd";
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(pattern);
-
-        startingDay = datePicker.getValue();
-        startingDay = startingDay.minusDays(startingDay.getDayOfWeek().getValue() - 1);
-        LocalDate d = startingDay;
+        startingDay = LocalDate.of(yearsComboBox.getValue(), monthMap.get(monthsComboBox.getValue()), currentDay);
+        LocalDate d = startingDay.minusDays(startingDay.getDayOfWeek().getValue() - 1);
 
         if (columnNames.isEmpty()) {
             for (int i = 0; i < days.length; ++i, d = d.plusDays(1)) {
@@ -89,19 +129,6 @@ public class TimetableController extends Windows {
             }
         }
 
-    }
-
-    String getTime(double startHour, double endHour) {
-        int startH = (int)startHour, startM = (int)((startHour - startH) * 60), endH = (int)endHour, endM = (int)((endHour - endH) * 60);
-        String startMins = "", endMins = "";
-        if (startM < 10)
-            startMins += "0";
-        startMins += Integer.toString(startM);
-        if (endM < 10)
-            endMins += "0";
-        endMins += Integer.toString(endM);
-
-        return startH + ":" + startMins + " - " + endH + ":" + endMins;
     }
 
     void setAction(StackPane stack, Rectangle r, Subject s) {
@@ -124,7 +151,7 @@ public class TimetableController extends Windows {
         double hourRange = maxHour - minHour;
         double cellWidth = (TimetableController.x2 - TimetableController.x1) / (daysInWeek + 1);
         double cellHeight = (TimetableController.y2 - TimetableController.y1) / (hourRange + 1);
-        String time = getTime(startHour, endHour);
+        String time = s.time.getTime();
 
         r.setX(cellWidth * column);
         r.setY(cellHeight * (startHour - minHour + 1));
@@ -145,48 +172,58 @@ public class TimetableController extends Windows {
     }
 
     public void showWeek() {
-        if (datePicker.getValue() != null) {
-            nameLabel.setText(MainController.timetableTopText);
-            while (!stacks.empty())
-                pane.getChildren().remove(stacks.pop());
-            setWeekDays();
+        previousWeekButton.setVisible(true);
+        nextWeekButton.setVisible(true);
+        nameLabel.setText(MainController.timetableTopText);
 
-            x1 = gridPane.getLayoutX();
-            x2 = x1 + gridPane.getWidth();
-            y1 = gridPane.getLayoutY();
-            y2 = y1 + gridPane.getHeight();
-            gridPane.setVisible(true);
+        while (!stacks.empty())
+            pane.getChildren().remove(stacks.pop());
+        setWeekDays();
 
-            String pattern = "YYYY M d";
-            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(pattern);
-            LocalDate d = startingDay;
+        x1 = gridPane.getLayoutX();
+        x2 = x1 + gridPane.getWidth();
+        y1 = gridPane.getLayoutY();
+        y2 = y1 + gridPane.getHeight();
+        gridPane.setVisible(true);
 
-            HashSet<String> visitedSubjs = Main.currentStudent.visitedSubjects;
-            for (int i = 0; i < days.length; ++i, d = d.plusDays(1)) {
-                String curr = dateFormatter.format(d);
-                ArrayList<Subject> daySubjects;
-                if (MainController.mode <= 2)
-                    daySubjects = groupsSubjects.get(Main.currentStudent.group).get(curr);
-                else
-                    daySubjects = filteredSubjects.get(MainController.chosen).get(curr);
+        String pattern = "YYYY M d";
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(pattern);
+        LocalDate d = startingDay.minusDays(startingDay.getDayOfWeek().getValue() - 1);
 
-                if (daySubjects != null) {
-                    for (Subject s : daySubjects) {
-                        if (MainController.mode != 1 || visitedSubjs.contains(s.time.toString())) {
-                            int dayOfWeek = LocalDate.of(s.time.date.year, s.time.date.month, s.time.date.dayOfMonth).getDayOfWeek().getValue();
-                            Rectangle r = new Rectangle();
-                            StackPane stack = getRectangle(r, dayOfWeek, s);
-                            pane.getChildren().add(stack);
+        HashSet<String> visitedSubjs = currentStudent.visitedSubjects;
+        for (int i = 0; i < days.length; ++i, d = d.plusDays(1)) {
+            String curr = dateFormatter.format(d);
+            ArrayList<Subject> daySubjects;
+            if (MainController.mode <= 2)
+                daySubjects = groupsSubjects.get(currentStudent.group).get(curr);
+            else
+                daySubjects = filteredSubjects.get(MainController.chosen).get(curr);
 
-                            if (MainController.mode <= 1 && visitedSubjs.contains(s.time.toString()))
-                                r.setFill(visitedColor);
-                            stacks.add(stack);
-                        }
+            if (daySubjects != null) {
+                for (Subject s : daySubjects) {
+                    if (MainController.mode != 1 || visitedSubjs.contains(s.time.toString())) {
+                        int dayOfWeek = LocalDate.of(s.time.date.year, s.time.date.month, s.time.date.dayOfMonth).getDayOfWeek().getValue();
+                        Rectangle r = new Rectangle();
+                        StackPane stack = getRectangle(r, dayOfWeek, s);
+                        pane.getChildren().add(stack);
+
+                        if (MainController.mode <= 1 && visitedSubjs.contains(s.time.toString()))
+                            r.setFill(visitedColor);
+                        stacks.add(stack);
                     }
                 }
             }
         }
-        else
-            showAlert("Pasirinkimo klaida.", "Nepasirinkta data.");
+    }
+
+    public void showPreviousWeek() {
+        currentDay = Math.max(currentDay - 7, 1);
+        showWeek();
+    }
+
+    public void showNextWeek() {
+        int maxDay = startingDay.lengthOfMonth();
+        currentDay = Math.min(currentDay + 7, maxDay);
+        showWeek();
     }
 }

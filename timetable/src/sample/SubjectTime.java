@@ -15,6 +15,19 @@ public class SubjectTime {
         this.endHour = Double.parseDouble(h[1]);
     }
 
+    String getTime() {
+        int startH = (int)startHour, startM = (int)((startHour - startH) * 60), endH = (int)endHour, endM = (int)((endHour - endH) * 60);
+        String startMins = "", endMins = "";
+        if (startM < 10)
+            startMins += "0";
+        startMins += Integer.toString(startM);
+        if (endM < 10)
+            endMins += "0";
+        endMins += Integer.toString(endM);
+
+        return startH + ":" + startMins + " - " + endH + ":" + endMins;
+    }
+
     @Override
     public String toString() {
         return this.stringified;

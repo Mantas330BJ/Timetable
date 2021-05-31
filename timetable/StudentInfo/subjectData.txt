@@ -1,0 +1,26 @@
+4
+3
+Objektinis programavimas
+2
+2021 5 19
+12 14
+2021 5 21
+8.5 10
+Algoritmų teorija
+1
+2021 5 24
+14 16
+Matematika
+1
+2021 5 2
+8.5 10
+5
+1
+Anglų kalba
+3
+2021 5 27
+9 13
+2021 5 11
+8 10
+2021 5 1
+9.5 12
