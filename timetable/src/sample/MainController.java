@@ -78,7 +78,8 @@ public class MainController implements dataPassing {
             for (ListView<String> l : userLists.keySet())
                 l.getItems().remove(currentStudent.name);
             try {
-                sockets.get(currentStudent.name).close();
+                if (sockets.get(currentStudent.name) != null)
+                    sockets.get(currentStudent.name).close();
             } catch (IOException exception) {
                 exception.printStackTrace();
             }
