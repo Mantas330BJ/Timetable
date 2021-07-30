@@ -1,2 +1,2 @@
 # Timetable
-JavaFX university timetable app simulation.
+JavaFX university timetable simulation with available chat.
